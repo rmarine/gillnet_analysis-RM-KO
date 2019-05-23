@@ -1,8 +1,7 @@
 setwd("/github/gillnet_analysis-RM-KO")
 
+install.packages("TropFishR")
 library(TropFishR)
-install.packages(c("cluster.datasets"),dependencies = TRUE)
-library(cluster.datasets)
 
 
 gillnet_k<-read.csv(file.choose(),stringsAsFactors = T, header = T)
@@ -12,10 +11,12 @@ colnames(gillnet_k)<- c("0.5",  "2.0",  "3.0",  "4.0",  "6.0",  "8.0", "10.0")
 CatchPerNet_mat<- unlist(gillnet_k, use.names = FALSE)
 CatchPerNet_mat
 
-midLength<-c(5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 165, 175, 185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285)
-midLength
-meshsizes<-c(0.5, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0)
-meshsizes
+midLengths<-c(5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 165, 175, 185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285)
+midLengths
+meshSizes<-c(0.5, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0)
+meshSizes
+
+#i developed the CatchPerNet_mat manually but im sure there's a code to auotomate this... Will still search
 CatchPerNet_mat = matrix(
   c(34, 143, 78, 16, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 2, 150, 176, 36, 4, 4, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -29,7 +30,20 @@ CatchPerNet_mat = matrix(
   ncol = 7, #number of columns
   byrow = TRUE) #fill matrix by rows
 
-gillnet_k = list(midLength = midLength, meshsizes = meshsizes, CatchPerNet_mat = CatchPerNet_mat)
+millar = list(midLengths = midLengths, meshSizes = meshSizes, CatchPerNet_mat = CatchPerNet_mat)
+
+# millar_Select Output section 2 ---------------------------------------------------------
+output<- select_Millar(millar, x0 = NULL, rtype = "lognorm") #you can change the graph types between normal curve and lognormal
+ncolor<- length(output$meshSizes)
+plot(output, plotlens=seq(40,90,0.1), deviance_plot = FALSE,
+     lty=1, col=rainbow(ncolor))
+legend("topright", col = rainbow(ncolor), legend = output$meshSizes,
+       lty = 1, title = "Mesh_size [cm]")
+
+
+# gillnet fit section -----------------------------------------------------
+#trial
+
 
 gillnetfit <- function(data, meshsizes,
                        rtype="norm.loc",
@@ -127,22 +141,9 @@ gillnetfit <- function(data, meshsizes,
 }
 
 data("gillnet_k")
-output<- select_Millar(gillnet_k, x0 = c(60,4), rel.power = rep(1,8),
-                       rtype = "norm.loc", plot = FALSE)
 
 
-
-# trial section 2 ---------------------------------------------------------
-output<- select_Millar(gillnet_k, x0 = NULL, rtype = "norm.loc")
-ncolor<- length(output$meshsizes)
-plot(output, plotlens=seq(40,90,0.1), deviance_plot = FALSE,
-     lty=1, col=rainbow(ncolor))
-legend("topleft", col = rainbow(ncolor), legend = output$meshSizes,
-       lty = 1, title = "Mesh_size [cm]")
-
-
-
-gillnetfit(data = millar,meshsizes,type="norm.loc",rel.power = NULL,
+gillnetfit(data = millar,meshSizes,type="norm.loc",rel.power = NULL,
            plots=c(T,T),plotlens = NULL,details = F)
 
 
